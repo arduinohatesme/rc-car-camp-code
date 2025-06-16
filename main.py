@@ -24,7 +24,7 @@ import socket
 import time
 from machine import Pin, PWM
 import ujson as json
-from typing import Any, Dict
+
 
 
 # ==== CONFIGURATION ====
@@ -110,6 +110,7 @@ def connect_wifi(ssid: str, password: str, hostname: str) -> str:
     """
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
+    wlan.ifconfig(('10.10.20.63', '255.255.255.0', '10.10.20.1', '10.10.20.1'))
     wlan.connect(ssid, password)
 
     print("Connecting to Wi-Fi...")
@@ -118,9 +119,9 @@ def connect_wifi(ssid: str, password: str, hostname: str) -> str:
         time.sleep(0.25)
     
     LED.on()
-    ip = wlan.ifconfig()[0]
+    ip = wlan.ifconfig()
     print(f"Connected. IP address: {ip}")
-    return ip
+    return ip[0]
 
 
 # ==== Handle Requests ====
@@ -161,7 +162,7 @@ def handle_api_request(request: str, car: RCCar) -> None:
 # ==== Main Entry ====
 def main() -> None:
     """Main entry point: sets up car, connects Wi-Fi, and starts HTTP server."""
-    ip = connect_wifi()
+    ip = connect_wifi(SSID, PASSWORD, HOSTNAME)
     esc = PWMOutput(ESC_PIN)
     servo = PWMOutput(SERVO_PIN)
     car = RCCar(esc, servo)
@@ -189,4 +190,5 @@ def main() -> None:
             cl.close()
 
 main()
+
 
